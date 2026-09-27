@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Grind</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            padding: 30px 0 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #7b2fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .header .date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header .day-name {
+            font-size: 18px;
+            color: #888;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* OVERVIEW CARDS */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .card {
+            background: #14141f;
+            border: 1px solid #1e1e30;
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #2a2a45;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .card .icon {
+            font-size: 30px;
+            margin-bottom: 12px;
+        }
+
+        .card .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .card .card-subtitle {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .card .progress-bar {
+            margin-top: 12px;
+            height: 4px;
+            background: #1e1e30;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .card .progress-bar .fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .card-morning .fill { background: linear-gradient(90deg, #ff9a56, #ff6b6b); }
+        .card-workout .fill { background: linear-gradient(90deg, #00d4ff, #7b2fff); }
+        .card-daily .fill { background: linear-gradient(90deg, #56ab2f, #a8e063); }
+        .card-night .fill { background: linear-gradient(90deg, #6441a5, #2a0845); }
+
+        .card-morning { border-left: 3px solid #ff9a56; }
+        .card-workout { border-left: 3px solid #00d4ff; }
+        .card-daily { border-left: 3px solid #56ab2f; }
+        .card-night { border-left: 3px solid #6441a5; }
+
+        /* DETAIL VIEW */
+        .detail-view {
+            display: none;
+        }
+
+        .detail-view.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: #00d4ff;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 10px 0;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            color: #fff;
+        }
+
+        .detail-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 10px 0 20px;
+        }
+
+        /* CHECKLIST */
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            background: #14141f;
+            border: 1px solid #1e1e30;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .checklist li.checked {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .checklist li .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .checklist li.checked .checkbox {
+            background: #00d4ff;
+            border-color: #00d4ff;
+        }
+
+        .checklist li .checkbox::after {
+            content: '✓';
+            color: #0a0a0f;
+            font-weight: bold;
+            font-size: 14px;
+            display: none;
+        }
+
+        .checklist li.checked .checkbox::after {
+            display: block;
+        }
+
+        .checklist li .task-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .checklist li .task-time {
+            color: #555;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        /* WORKOUT SPECIFIC */
+        .workout-exercise {
+            background: #14141f;
+            border: 1px solid #1e1e30;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+        }
+
+        .workout-exercise .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .workout-exercise .exercise-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .workout-exercise .muscle-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: #1e1e30;
+            color: #00d4ff;
+        }
+
+        .sets-grid {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr auto;
+            gap: 6px;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .sets-grid .set-label {
+            color: #555;
+            font-size: 12px;
+            padding-right: 8px;
+        }
+
+        .sets-grid input {
+            background: #0a0a0f;
+            border: 1px solid #1e1e30;
+            border-radius: 8px;
+            color: #fff;
+            padding: 8px 10px;
+            font-size: 13px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .sets-grid input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .sets-grid .set-check {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: none;
+            color: transparent;
+            font-size: 14px;
+        }
+
+        .sets-grid .set-check.done {
+            background: #00d4ff;
+            border-color: #00d4ff;
+            color: #0a0a0f;
+        }
+
+        .sets-header {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr auto;
+            gap: 6px;
+            font-size: 11px;
+            color: #444;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            padding: 0 2px;
+        }
+
+        /* EDIT MODE */
+        .edit-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #1e1e30;
+        }
+
+        .edit-btn {
+            background: #1e1e30;
+            border: none;
+            color: #888;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .edit-btn:hover {
+            background: #2a2a45;
+            color: #fff;
+        }
+
+        .edit-textarea {
+            width: 100%;
+            background: #0a0a0f;
+            border: 1px solid #1e1e30;
+            border-radius: 12px;
+            color: #e0e0e0;
+            padding: 14px;
+            font-family: inherit;
+            font-size: 13px;
+            min-height: 200px;
+            resize: vertical;
+            margin-top: 10px;
+        }
+
+        .edit-textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #00d4ff, #7b2fff);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .save-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+        }
+
+        .cancel-btn {
+            background: #1e1e30;
+            border: none;
+            color: #888;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-left: 8px;
+        }
+
+        /* WORKOUT LOG */
+        .log-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #1e1e30;
+        }
+
+        .log-section h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #666;
+        }
+
+        .log-entry {
+            background: #14141f;
+            border: 1px solid #1e1e30;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .log-entry .log-date {
+            color: #00d4ff;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .log-entry .log-detail {
+            color: #666;
+        }
+
+        /* NAVIGATION TABS */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            background: #14141f;
+            border: 1px solid #1e1e30;
+            border-radius: 20px;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            background: #00d4ff;
+            color: #0a0a0f;
+            font-weight: 700;
+            border-color: #00d4ff;
+        }
+
+        /* RESET BUTTON */
+        .daily-reset {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .reset-btn {
+            background: none;
+            border: 1px solid #1e1e30;
+            color: #444;
+            padding: 8px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .reset-btn:hover {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        /* STREAK */
+        .streak-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #14141f;
+            border-radius: 12px;
+            border: 1px solid #1e1e30;
+        }
+
+        .streak-item {
+            text-align: center;
+        }
+
+        .streak-item .streak-num {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #7b2fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .streak-item .streak-label {
+            font-size: 11px;
+            color: #555;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- DASHBOARD -->
+        <div id="dashboard">
+            <div class="header">
+                <h1>DAILY GRIND</h1>
+                <div class="day-name" id="dayName"></div>
+                <div class="date" id="currentDate"></div>
+            </div>
+
+            <div class="streak-bar">
+                <div class="streak-item">
+                    <div class="streak-num" id="streakCount">0</div>
+                    <div class="streak-label">Day Streak</div>
+                </div>
+                <div class="streak-item">
+                    <div class="streak-num" id="totalWorkouts">0</div>
+                    <div class="streak-label">Workouts</div>
+                </div>
+                <div class="streak-item">
+                    <div class="streak-num" id="todayProgress">0%</div>
+                    <div class="streak-label">Today</div>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card card-morning" onclick="showDetail('morning')">
+                    <div class="icon">🌅</div>
+                    <div class="card-title">Morning</div>
+                    <div class="card-subtitle" id="morningStatus">0 / 0 done</div>
+                    <div class="progress-bar"><div class="fill" id="morningProgress" style="width: 0%"></div></div>
+                </div>
+                <div class="card card-workout" onclick="showDetail('workout')">
+                    <div class="icon">💪</div>
+                    <div class="card-title">Workout</div>
+                    <div class="card-subtitle" id="workoutStatus">Today's plan</div>
+                    <div class="progress-bar"><div class="fill" id="workoutProgress" style="width: 0%"></div></div>
+                </div>
+                <div class="card card-daily" onclick="showDetail('daily')">
+                    <div class="icon">📋</div>
+                    <div class="card-title">Daily Tasks</div>
+                    <div class="card-subtitle" id="dailyStatus">0 / 0 done</div>
+                    <div class="progress-bar"><div class="fill" id="dailyProgress" style="width: 0%"></div></div>
+                </div>
+                <div class="card card-night" onclick="showDetail('night')">
+                    <div class="icon">🌙</div>
+                    <div class="card-title">Night</div>
+                    <div class="card-subtitle" id="nightStatus">0 / 0 done</div>
+                    <div class="progress-bar"><div class="fill" id="nightProgress" style="width: 0%"></div></div>
+                </div>
+            </div>
+
+            <div class="daily-reset">
+                <button class="reset-btn" onclick="resetToday()">↻ Reset Today's Progress</button>
+            </div>
+        </div>
+
+        <!-- DETAIL VIEWS -->
+        <div id="detailView" class="detail-view">
+            <button class="back-btn" onclick="goBack()">← Back to Overview</button>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // DEFAULT DATA - CUSTOMIZE THIS FOR YOU
+        // ========================================
+        const DEFAULT_DATA = {
+            morning: {
+                title: "🌅 Morning Routine",
+                items: [
+                    { text: "Wake up - no snooze", time: "6:00" },
+                    { text: "Drink water (500ml)", time: "6:05" },
+                    { text: "Stretch / mobility (10 min)", time: "6:10" },
+                    { text: "Cold shower", time: "6:20" },
+                    { text: "Breakfast - high protein", time: "6:35" },
+                    { text: "Review today's plan", time: "7:00" },
+                ]
+            },
+            night: {
+                title: "🌙 Night Routine",
+                items: [
+                    { text: "No screens 30 min before bed", time: "21:30" },
+                    { text: "Prepare tomorrow's clothes", time: "21:30" },
+                    { text: "Journal / reflect on today", time: "21:40" },
+                    { text: "Read 15 min", time: "21:50" },
+                    { text: "Lights out", time: "22:15" },
+                ]
+            },
+            daily: {
+                title: "📋 Daily Tasks",
+                items: [
+                    { text: "Drink 3L water throughout day", time: "All day" },
+                    { text: "10,000 steps minimum", time: "All day" },
+                    { text: "Meal prep / eat clean", time: "All day" },
+                    { text: "Study / work focus block", time: "09:00" },
+                    { text: "Clean room / space", time: "18:00" },
+                    { text: "No junk food", time: "All day" },
+                ]
+            },
+            workouts: {
+                // Day-specific workout plans (0 = Sunday, 1 = Monday, etc.)
+                0: { // Sunday - Rest
+                    name: "Rest / Active Recovery",
+                    exercises: [
+                        { name: "Light Walk", muscle: "Cardio", sets: 1, reps: "30 min" },
+                        { name: "Full Body Stretch", muscle: "Mobility", sets: 1, reps: "20 min" },
+                        { name: "Foam Rolling", muscle: "Recovery", sets: 1, reps: "15 min" },
+                    ]
+                },
+                1: { // Monday
+                    name: "Push Day (Chest, Shoulders, Triceps)",
+                    exercises: [
+                        { name: "Bench Press", muscle: "Chest", sets: 4, reps: "8-10" },
+                        { name: "Incline Dumbbell Press", muscle: "Upper Chest", sets: 3, reps: "10-12" },
+                        { name: "Overhead Press", muscle: "Shoulders", sets: 4, reps: "8-10" },
+                        { name: "Lateral Raises", muscle: "Side Delts", sets: 3, reps: "12-15" },
+                        { name: "Tricep Pushdowns", muscle: "Triceps", sets: 3, reps: "10-12" },
+                        { name: "Overhead Tricep Extension", muscle: "Triceps", sets: 3, reps: "10-12" },
+                    ]
+                },
+                2: { // Tuesday
+                    name: "Pull Day (Back, Biceps)",
+                    exercises: [
+                        { name: "Deadlift", muscle: "Back", sets: 4, reps: "5-6" },
+                        { name: "Pull-ups", muscle: "Lats", sets: 4, reps: "8-10" },
+                        { name: "Barbell Rows", muscle: "Back", sets: 3, reps: "8-10" },
+                        { name: "Face Pulls", muscle: "Rear Delts", sets: 3, reps: "12-15" },
+                        { name: "Barbell Curls", muscle: "Biceps", sets: 3, reps: "10-12" },
+                        { name: "Hammer Curls", muscle: "Biceps", sets: 3, reps: "10-12" },
+                    ]
+                },
+                3: { // Wednesday
+                    name: "Legs Day",
+                    exercises: [
+                        { name: "Squats", muscle: "Quads", sets: 4, reps: "6-8" },
+                        { name: "Romanian Deadlift", muscle: "Hamstrings", sets: 3, reps: "8-10" },
+                        { name: "Leg Press", muscle: "Quads", sets: 3, reps: "10-12" },
+                        { name: "Leg Curls", muscle: "Hamstrings", sets: 3, reps: "10-12" },
+                        { name: "Calf Raises", muscle: "Calves", sets: 4, reps: "12-15" },
+                        { name: "Walking Lunges", muscle: "Legs", sets: 3, reps: "12 each" },
+                    ]
+                },
+                4: { // Thursday
+                    name: "Push Day (Chest, Shoulders, Triceps)",
+                    exercises: [
+                        { name: "Dumbbell Bench Press", muscle: "Chest", sets: 4, reps: "8-10" },
+                        { name: "Cable Flyes", muscle: "Chest", sets: 3, reps: "12-15" },
+                        { name: "Arnold Press", muscle: "Shoulders", sets: 3, reps: "10-12" },
+                        { name: "Front Raises", muscle: "Front Delts", sets: 3, reps: "12" },
+                        { name: "Dips", muscle: "Triceps/Chest", sets: 3, reps: "10-12" },
+                        { name: "Skull Crushers", muscle: "Triceps", sets: 3, reps: "10-12" },
+                    ]
+                },
+                5: { // Friday
+                    name: "Pull Day (Back, Biceps)",
+                    exercises: [
+                        { name: "Lat Pulldown", muscle: "Lats", sets: 4, reps: "10-12" },
+                        { name: "Seated Cable Row", muscle: "Mid Back", sets: 3, reps: "10-12" },
+                        { name: "Dumbbell Rows", muscle: "Back", sets: 3, reps: "10-12" },
+                        { name: "Reverse Flyes", muscle: "Rear Delts", sets: 3, reps: "12-15" },
+                        { name: "Preacher Curls", muscle: "Biceps", sets: 3, reps: "10-12" },
+                        { name: "Incline Dumbbell Curls", muscle: "Biceps", sets: 3, reps: "10-12" },
+                    ]
+                },
+                6: { // Saturday
+                    name: "Legs + Core",
+                    exercises: [
+                        { name: "Front Squats", muscle: "Quads", sets: 4, reps: "8-10" },
+                        { name: "Bulgarian Split Squats", muscle: "Legs", sets: 3, reps: "10 each" },
+                        { name: "Leg Extensions", muscle: "Quads", sets: 3, reps: "12-15" },
+                        { name: "Hip Thrusts", muscle: "Glutes", sets: 3, reps: "10-12" },
+                        { name: "Hanging Leg Raises", muscle: "Core", sets: 3, reps: "12-15" },
+                        { name: "Plank", muscle: "Core", sets: 3, reps: "60 sec" },
+                    ]
+                }
+            }
+        };
+
+        // ========================================
+        // APP STATE
+        // ========================================
+        const TODAY = new Date().toISOString().split('T')[0];
+        const DAY_OF_WEEK = new Date().getDay();
+        const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        function getData() {
+            const stored = localStorage.getItem('dailyGrindData');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return {
+                routines: {
+                    morning: DEFAULT_DATA.morning,
+                    night: DEFAULT_DATA.night,
+                    daily: DEFAULT_DATA.daily,
+                },
+                workouts: DEFAULT_DATA.workouts,
+                checked: {},
+                workoutLog: {},
+                setData: {},
+                streak: 0,
+                lastActiveDate: null
+            };
+        }
+
+        function saveData(data) {
+            localStorage.setItem('dailyGrindData', JSON.stringify(data));
+        }
+
+        function getTodayKey(section, index) {
+            return `${TODAY}_${section}_${index}`;
+        }
+
+        function getSetKey(exerciseIndex, setIndex) {
+            return `${TODAY}_set_${exerciseIndex}_${setIndex}`;
+        }
+
+        // ========================================
+        // RENDER DASHBOARD
+        // ========================================
+        function renderDashboard() {
+            const data = getData();
+
+            // Date display
+            const now = new Date();
+            document.getElementById('dayName').textContent = DAYS[DAY_OF_WEEK];
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+            });
+
+            // Calculate streak
+            updateStreak(data);
+
+            // Update each card
+            ['morning', 'daily', 'night'].forEach(section => {
+                const items = data.routines[section].items;
+                let done = 0;
+                items.forEach((_, i) => {
+                    if (data.checked[getTodayKey(section, i)]) done++;
+                });
+                const pct = items.length ? Math.round((done / items.length) * 100) : 0;
+
+                document.getElementById(`${section}Status`).textContent = `${done} / ${items.length} done`;
+                document.getElementById(`${section}Progress`).style.width = `${pct}%`;
+            });
+
+            // Workout card
+            const workout = data.workouts[DAY_OF_WEEK];
+            let workoutDone = 0;
+            let workoutTotal = 0;
+            if (workout) {
+                workout.exercises.forEach((ex, ei) => {
+                    for (let s = 0; s < ex.sets; s++) {
+                        workoutTotal++;
+                        if (data.checked[getSetKey(ei, s)]) workoutDone++;
+                    }
+                });
+            }
+            const workoutPct = workoutTotal ? Math.round((workoutDone / workoutTotal) * 100) : 0;
+            document.getElementById('workoutStatus').textContent = workout ? workout.name : 'Rest day';
+            document.getElementById('workoutProgress').style.width = `${workoutPct}%`;
+
+            // Overall progress
+            let totalDone = 0, totalItems = 0;
+            ['morning', 'daily', 'night'].forEach(section => {
+                const items = data.routines[section].items;
+                items.forEach((_, i) => {
+                    totalItems++;
+                    if (data.checked[getTodayKey(section, i)]) totalDone++;
+                });
+            });
+            totalDone += workoutDone;
+            totalItems += workoutTotal;
+            const overallPct = totalItems ? Math.round((totalDone / totalItems) * 100) : 0;
+            document.getElementById('todayProgress').textContent = `${overallPct}%`;
+
+            // Stats
+            document.getElementById('streakCount').textContent = data.streak || 0;
+            document.getElementById('totalWorkouts').textContent = Object.keys(data.workoutLog || {}).length;
+        }
+
+        function updateStreak(data) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (data.lastActiveDate === TODAY) {
+                // Already active today, keep streak
+            } else if (data.lastActiveDate === yesterdayStr) {
+                data.streak = (data.streak || 0) + 1;
+                data.lastActiveDate = TODAY;
+                saveData(data);
+            } else if (data.lastActiveDate !== TODAY) {
+                data.streak = 1;
+                data.lastActiveDate = TODAY;
+                saveData(data);
+            }
+        }
+
+        // ========================================
+        // DETAIL VIEWS
+        // ========================================
+        function showDetail(section) {
+            document.getElementById('dashboard').style.display = 'none';
+            const detail = document.getElementById('detailView');
+            detail.classList.add('active');
+
+            if (section === 'workout') {
+                renderWorkoutDetail();
+            } else {
+                renderChecklistDetail(section);
+            }
+        }
+
+        function goBack() {
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('detailView').classList.remove('active');
+            renderDashboard();
+        }
+
+        function renderChecklistDetail(section) {
+            const data = getData();
+            const routine = data.routines[section];
+            const content = document.getElementById('detailContent');
+
+            let html = `<h2 class="detail-title">${routine.title}</h2>`;
+            html += `<ul class="checklist">`;
+
+            routine.items.forEach((item, i) => {
+                const key = getTodayKey(section, i);
+                const checked = data.checked[key] ? 'checked' : '';
+                html += `
+                    <li class="${checked}" onclick="toggleCheck('${section}', ${i})" id="item-${section}-${i}">
+                        <div class="checkbox"></div>
+                        <span class="task-text">${item.text}</span>
+                        <span class="task-time">${item.time}</span>
+                    </li>
+                `;
+            });
+
+            html += `</ul>`;
+
+            // Edit section
+            html += `
+                <div class="edit-section">
+                    <button class="edit-btn" onclick="toggleEdit('${section}')">✏️ Edit ${section} routine</button>
+                    <div id="editArea-${section}" style="display:none">
+                        <p style="color:#555; font-size:12px; margin-top:10px">One item per line. Format: <code>Task text | time</code></p>
+                        <textarea class="edit-textarea" id="editText-${section}">${routine.items.map(i => `${i.text} | ${i.time}`).join('\n')}</textarea>
+                        <button class="save-btn" onclick="saveEdit('${section}')">Save Changes</button>
+                        <button class="cancel-btn" onclick="toggleEdit('${section}')">Cancel</button>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+        }
+
+        function renderWorkoutDetail() {
+            const data = getData();
+            const workout = data.workouts[DAY_OF_WEEK];
+            const content = document.getElementById('detailContent');
+
+            if (!workout) {
+                content.innerHTML = `<h2 class="detail-title">💪 Rest Day</h2><p style="color:#666">No workout scheduled. Recover and come back stronger.</p>`;
+                return;
+            }
+
+            // Day tabs
+            let html = `<h2 class="detail-title">💪 ${workout.name}</h2>`;
+            html += `<div class="nav-tabs">`;
+            DAYS.forEach((day, i) => {
+                const active = i === DAY_OF_WEEK ? 'active' : '';
+                html += `<div class="nav-tab ${active}" onclick="previewDay(${i})">${day.slice(0, 3)}</div>`;
+            });
+            html += `</div>`;
+
+            html += `<div id="workoutExercises">`;
+            html += renderExercises(workout, data);
+            html += `</div>`;
+
+            // Save workout button
+            html += `
+                <div style="margin-top:20px; text-align:center">
+                    <button class="save-btn" onclick="logWorkout()" style="width:100%">
+                        📝 Save Today's Workout to Log
+                    </button>
+                </div>
+            `;
+
+            // Edit workout
+            html += `
+                <div class="edit-section">
+                    <button class="edit-btn" onclick="toggleWorkoutEdit()">✏️ Edit ${DAYS[DAY_OF_WEEK]}'s Workout</button>
+                    <div id="editArea-workout" style="display:none">
+                        <p style="color:#555; font-size:12px; margin-top:10px">One exercise per line. Format: <code>Exercise Name | Muscle | sets | reps</code></p>
+                        <input type="text" id="workoutNameEdit" value="${workout.name}" style="width:100%; background:#0a0a0f; border:1px solid #1e1e30; border-radius:8px; color:#fff; padding:10px; margin-top:10px; font-size:14px" placeholder="Workout name">
+                        <textarea class="edit-textarea" id="editText-workout">${workout.exercises.map(e => `${e.name} | ${e.muscle} | ${e.sets} | ${e.reps}`).join('\n')}</textarea>
+                        <button class="save-btn" onclick="saveWorkoutEdit()">Save Changes</button>
+                        <button class="cancel-btn" onclick="toggleWorkoutEdit()">Cancel</button>
+                    </div>
+                </div>
+            `;
+
+            // Workout log history
+            html += `<div class="log-section"><h3>📊 Recent Workout Log</h3>`;
+            const logs = data.workoutLog || {};
+            const logKeys = Object.keys(logs).sort().reverse().slice(0, 10);
+            if (logKeys.length === 0) {
+                html += `<p style="color:#444; font-size:13px">No workouts logged yet. Get after it!</p>`;
+            }
+            logKeys.forEach(date => {
+                html += `
+                    <div class="log-entry">
+                        <div class="log-date">${date}</div>
+                        <div class="log-detail">${logs[date]}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            content.innerHTML = html;
+        }
+
+        function renderExercises(workout, data) {
+            let html = '';
+            workout.exercises.forEach((exercise, ei) => {
+                html += `
+                    <div class="workout-exercise">
+                        <div class="exercise-header">
+                            <span class="exercise-name">${exercise.name}</span>
+                            <span class="muscle-tag">${exercise.muscle}</span>
+                        </div>
+                        <div class="sets-header">
+                            <span>SET</span>
+                            <span>WEIGHT</span>
+                            <span>REPS</span>
+                            <span>✓</span>
+                        </div>
+                        <div class="sets-grid">
+                `;
+
+                for (let s = 0; s < exercise.sets; s++) {
+                    const setKey = getSetKey(ei, s);
+                    const setData = data.setData?.[setKey] || {};
+                    const done = data.checked?.[setKey] ? 'done' : '';
+
+                    html += `
+                        <span class="set-label">${s + 1}</span>
+                        <input type="text" placeholder="kg" value="${setData.weight || ''}" 
+                               onchange="saveSetData(${ei}, ${s}, 'weight', this.value)" />
+                        <input type="text" placeholder="${exercise.reps}" value="${setData.reps || ''}" 
+                               onchange="saveSetData(${ei}, ${s}, 'reps', this.value)" />
+                        <button class="set-check ${done}" onclick="toggleSetCheck(${ei}, ${s}, this)">✓</button>
+                    `;
+                }
+
+                html += `</div></div>`;
+            });
+            return html;
+        }
+
+        // ========================================
+        // INTERACTIONS
+        // ========================================
+        function toggleCheck(section, index) {
+            const data = getData();
+            const key = getTodayKey(section, index);
+            data.checked[key] = !data.checked[key];
+            saveData(data);
+
+            const el = document.getElementById(`item-${section}-${index}`);
+            el.classList.toggle('checked');
+        }
+
+        function toggleSetCheck(exerciseIndex, setIndex, btn) {
+            const data = getData();
+            const key = getSetKey(exerciseIndex, setIndex);
+            data.checked[key] = !data.checked[key];
+            saveData(data);
+            btn.classList.toggle('done');
+        }
+
+        function saveSetData(exerciseIndex, setIndex, field, value) {
+            const data = getData();
+            const key = getSetKey(exerciseIndex, setIndex);
+            if (!data.setData) data.setData = {};
+            if (!data.setData[key]) data.setData[key] = {};
+            data.setData[key][field] = value;
+            saveData(data);
+        }
+
+        function logWorkout() {
+            const data = getData();
+            const workout = data.workouts[DAY_OF_WEEK];
+            if (!workout) return;
+
+            let logText = workout.name + ' - ';
+            let details = [];
+            workout.exercises.forEach((ex, ei) => {
+                let sets = [];
+                for (let s = 0; s < ex.sets; s++) {
+                    const setKey = getSetKey(ei, s);
+                    const sd = data.setData?.[setKey];
+                    if (sd && (sd.weight || sd.reps)) {
+                        sets.push(`${sd.weight || '?'}kg×${sd.reps || '?'}`);
+                    }
+                }
+                if (sets.length > 0) {
+                    details.push(`${ex.name}: ${sets.join(', ')}`);
+                }
+            });
+
+            if (!data.workoutLog) data.workoutLog = {};
+            data.workoutLog[TODAY] = details.length > 0 ? details.join(' | ') : 'Completed (no weights logged)';
+            saveData(data);
+
+            alert('Workout saved to log! 💪');
+            renderWorkoutDetail();
+        }
+
+        function previewDay(dayIndex) {
+            const data = getData();
+            const workout = data.workouts[dayIndex];
+            const container = document.getElementById('workoutExercises');
+
+            if (!workout) {
+                container.innerHTML = '<p style="color:#555; padding:20px">Rest day - no workout.</p>';
+                return;
+            }
+
+            container.innerHTML = renderExercises(workout, data);
+
+            // Update tabs
+            document.querySelectorAll('.nav-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === dayIndex);
+            });
+        }
+
+        // ========================================
+        // EDITING
+        // ========================================
+        function toggleEdit(section) {
+            const area = document.getElementById(`editArea-${section}`);
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveEdit(section) {
+            const data = getData();
+            const text = document.getElementById(`editText-${section}`).value;
+            const lines = text.split('\n').filter(l => l.trim());
+
+            data.routines[section].items = lines.map(line => {
+                const parts = line.split('|').map(p => p.trim());
+                return {
+                    text: parts[0] || 'Task',
+                    time: parts[1] || ''
+                };
+            });
+
+            saveData(data);
+            renderChecklistDetail(section);
+        }
+
+        function toggleWorkoutEdit() {
+            const area = document.getElementById('editArea-workout');
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveWorkoutEdit() {
+            const data = getData();
+            const name = document.getElementById('workoutNameEdit').value;
+            const text = document.getElementById('editText-workout').value;
+            const lines = text.split('\n').filter(l => l.trim());
+
+            data.workouts[DAY_OF_WEEK] = {
+                name: name,
+                exercises: lines.map(line => {
+                    const parts = line.split('|').map(p => p.trim());
+                    return {
+                        name: parts[0] || 'Exercise',
+                        muscle: parts[1] || 'General',
+                        sets: parseInt(parts[2]) || 3,
+                        reps: parts[3] || '10'
+                    };
+                })
+            };
+
+            saveData(data);
+            renderWorkoutDetail();
+        }
+
+        function resetToday() {
+            if (!confirm('Reset all of today\'s checkboxes? Your routine templates and workout log will be kept.')) return;
+            const data = getData();
+
+            // Remove only today's checks and set data
+            Object.keys(data.checked).forEach(key => {
+                if (key.startsWith(TODAY)) delete data.checked[key];
+            });
+            if (data.setData) {
+                Object.keys(data.setData).forEach(key => {
+                    if (key.startsWith(TODAY)) delete data.setData[key];
+                });
+            }
+
+            saveData(data);
+            renderDashboard();
+        }
+
+        // ========================================
+        // INIT
+        // ========================================
+        renderDashboard();
+    </script>
+</body>
+</html>
